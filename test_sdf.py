@@ -1,14 +1,10 @@
 
 # coding: utf-8
 from __future__ import print_function
-#import pyrogen
-#import pyrogen_boost
 import atom_types
-import rdkit
 from rdkit import Chem
 from rdkit.Chem import AllChem
-import rdkit.Chem.Draw
-from rdkit.Chem.Draw import IPythonConsole
+import json
 
 
 def pad_atom_name(name, element):
@@ -74,12 +70,14 @@ def write_mols(suppl):
         # print('writing {}'.format(fn))
         print(Chem.MolToMolBlock(mol), file=file(fn, 'w'))
 
-def get_amber_types(m, mol_idx, ref_types=None, check_2_chars_only=True, make_dictionaries=False):
+def get_amber_types(m, mol_idx, ref_types=None, check_2_chars_only=True, make_dictionaries=False,
+                    atom_fail_set=[],atom_fails=0,mol_fails=0):
     Chem.AllChem.ComputeGasteigerCharges(m)
     names = add_atom_names(m)
     atom_types.set_atom_types(m)
     atom_types.set_parmfrosst_atom_types(m)
     aa_types=[]
+    this_mol = False
     cif_file_name = "test-pyrogen-"+str(mol_idx)+'.cif'
     if make_dictionaries:
        pysw.mmcif_dict_from_mol("XYZ", m.GetProp('_Name'), m, cif_file_name, False, False, True)
@@ -114,10 +112,11 @@ def get_amber_types(m, mol_idx, ref_types=None, check_2_chars_only=True, make_di
                 cc = "(set-rotation-centre " + \
                      str(coords.x) + ' ' + str(coords.y) + ' ' + str(coords.z) + ')'
                 s = 'failed to match mol_idx {} atom_idx {:>2} name {} coot_type {:>4} ref_type {:>2} at {}'
-                print(s.format(mol_idx, idx, name, coot_amber_type, ref_type, cc))
+                atom_fail_set.append((mol_idx,idx,coot_amber_type, ref_type))
+                #print(s.format(mol_idx, idx, name, coot_amber_type, ref_type, cc))
             else:
                 s = 'matched         mol_idx {} atom_idx {:>2} name {} coot_type {:>4} ref_type {}'
-                print(s.format(mol_idx, idx, name, coot_amber_type, ref_type))
+                #print(s.format(mol_idx, idx, name, coot_amber_type, ref_type))
 
             p=(atom.GetProp('name'), coot_amber_type)
             aa_types.append(p)
@@ -129,6 +128,22 @@ def get_amber_types(m, mol_idx, ref_types=None, check_2_chars_only=True, make_di
     return aa_types
 
 
+def check_json(ref_json,new_json):
+  data_in = json.load(open(ref_json))
+  if data_in["mol_fails"] <= new_json["mol_fails"]:
+    print("No improvement - mol fail number still as bad or worse")
+    return False
+  if data_in["atom_fails"] <= new_json["atom_fails"]:
+    print("No improvement - atom fail number still as bad or worse")
+    return False
+  ### Now fix this data"data"
+  print("Method improved")
+  new_errors= [x for x in new_json["data"] if x not in data_in["data"]]
+  new_error_count = len(new_errors)
+  if new_error_count > 0:
+    print("New error created")
+    print(new_errors)
+  return True
 
 if __name__ == '__main__':
 
@@ -143,15 +158,20 @@ if __name__ == '__main__':
        n = m.GetNumAtoms()
        ref_idx_offset[i]=(n_tot, n_tot+n)
        n_tot +=n
-       print(i,n, n_tot)
        if i == 100: break
-   print(ref_idx_offset)
 
    f = open('parm/zinc_p_f_types.txt')
    ref_types=[line.strip() for line in f.readlines()]
    f.close()
+   atom_fails = 0
+   mol_fails = 0
+   atom_fail_set = []
 
    for sdf_index in range(top_n):
       ref_types_for_mol=ref_types[ref_idx_offset[sdf_index][0]:ref_idx_offset[sdf_index][1]]    
-      types = get_amber_types(suppl[sdf_index], sdf_index, ref_types_for_mol, check_2_chars_only=True)
+      types = get_amber_types(suppl[sdf_index], sdf_index, ref_types_for_mol, check_2_chars_only=True,
+                              make_dictionaries=False, atom_fail_set=atom_fail_set,
+                              atom_fails=atom_fail_set, mol_fails=mol_fails)
+   json.dump({"mol_fails": len(list(set([x[0] for x in atom_fail_set]))), "atom_fails": len(atom_fail_set),"data":atom_fail_set},open("out.json","w"),)
+   check_json("ref.json",json.load(open("out.json")))
 
