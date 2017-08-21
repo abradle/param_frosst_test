@@ -127,9 +127,13 @@ def get_amber_types(m, mol_idx, ref_types=None, check_2_chars_only=True, make_di
 
 
 if __name__ == '__main__':
+   
+   mdl_in = 'input.mdl'
+   mol2_in = 'input.mol2'
+   mol2_out = 'output.mol2'
 
    # Read in the input mdl file
-   mol = Chem.MolFromMolFile('input.mdl',removeHs=False)
+   mol = Chem.MolFromMolFile(mdl_in,removeHs=False)
    ### Not needed
    # Add names 
    names = add_atom_names(mol)
@@ -138,4 +142,4 @@ if __name__ == '__main__':
    for atom in mol.GetAtoms():
       atom_type = atom.GetProp('pf_atom_type')
       repls.append(atom_type)
-   run("input.mol2",repls,"output.mol2") 
+   run(mol2_in,repls,mol2_out) 
