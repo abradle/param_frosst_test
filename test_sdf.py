@@ -5,7 +5,7 @@ import atom_types
 from rdkit import Chem
 from rdkit.Chem import AllChem
 import json
-
+from subprocess import call
 
 def pad_atom_name(name, element):
 
@@ -154,10 +154,16 @@ def check_json(ref_json,new_json):
   print("Fixed more issues than caused")
   return True
 
+def finish_off():
+  """Move out.json -> ref.json. Commit (atom_types_make.py will already be new). Push."""
+  call('mv out.json ref.json')
+  call('git add -u ', shell = True)
+  call('git commit -m "Auto commit - improvemnt"', shell = True)
+  call('git push origin master', shell = True)
+
 if __name__ == '__main__':
-
+   # atom_types_make.py should have been moved here by the person.
    top_n = 100
-
    # write_mols(suppl) # only need do this once
 
    suppl = Chem.SDMolSupplier('parm/zinc.sdf', removeHs=False)
@@ -182,5 +188,6 @@ if __name__ == '__main__':
                               make_dictionaries=False, atom_fail_set=atom_fail_set,
                               atom_fails=atom_fail_set, mol_fails=mol_fails)
    json.dump({"mol_fails": len(list(set([x[0] for x in atom_fail_set]))), "atom_fails": len(atom_fail_set),"data":atom_fail_set},open("out.json","w"),)
-   check_json("ref.json",json.load(open("out.json")))
-
+   if check_json("ref.json",json.load(open("out.json"))):
+     # Add and commit the new ref.json and the new atom_types_make.py
+     finish_off()
