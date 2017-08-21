@@ -5,7 +5,6 @@ import atom_types
 from rdkit import Chem
 from rdkit.Chem import AllChem
 import json
-from subprocess import call
 
 def pad_atom_name(name, element):
 
@@ -156,10 +155,11 @@ def check_json(ref_json,new_json):
 
 def finish_off():
   """Move out.json -> ref.json. Commit (atom_types_make.py will already be new). Push."""
-  call('mv out.json ref.json')
-  call('git add -u ', shell = True)
-  call('git commit -m "Auto commit - improvemnt"', shell = True)
-  call('git push origin master', shell = True)
+  import subprocess
+  subprocess.call('mv out.json ref.json', shell=True)
+  subprocess.call('git add -u ', shell = True)
+  subprocess.call('git commit -m "Auto commit - improvemnt"', shell = True)
+  subprocess.call('git push origin master', shell = True)
 
 if __name__ == '__main__':
    # atom_types_make.py should have been moved here by the person.
