@@ -139,10 +139,19 @@ def check_json(ref_json,new_json):
   ### Now fix this data"data"
   print("Method improved")
   new_errors= [x for x in new_json["data"] if x not in data_in["data"]]
+
+  new_fixess= [x for x in data_in["data"] if x not in new_json["data"]]
   new_error_count = len(new_errors)
   if new_error_count > 0:
     print("New error created")
     print(new_errors)
+  if new_fixess:
+    print("New fixes created")
+    print(new_fixess)
+  if len(new_errors) >= len(new_fixess):
+    print("Caused more problems than solved")
+    return False
+  print("Fixed more issues than caused")
   return True
 
 if __name__ == '__main__':
