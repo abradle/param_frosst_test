@@ -159,13 +159,15 @@ def finish_off():
   subprocess.call('mv out.json ref.json', shell=True)
   subprocess.call('git add -u ', shell = True)
   subprocess.call('git commit -m "Auto commit - improvemnt"', shell = True)
-  subprocess.call('git push origin master', shell = True)
 
 if __name__ == '__main__':
+   run_test()
+
+def run_test(): 
    # atom_types_make.py should have been moved here by the person.
    top_n = 100
    # write_mols(suppl) # only need do this once
-
+   reload(atom_types)
    suppl = Chem.SDMolSupplier('parm/zinc.sdf', removeHs=False)
    n_tot = 0
    ref_idx_offset={}
@@ -191,3 +193,5 @@ if __name__ == '__main__':
    if check_json("ref.json",json.load(open("out.json"))):
      # Add and commit the new ref.json and the new atom_types_make.py
      finish_off()
+     return True
+   return False

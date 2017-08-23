@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>ACE in Action</title>
+<style type="text/css" media="screen">
+   #editor {
+       height: 300px;
+       width: 700px;
+   }
+
+</style>
+
+<style type="text/css" src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css"></style>
+<script type="text/js" src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js"></script>
+
+<script>
+function onComplete(){
+
+// Post the contents of the text editor to a webservice
+var out_data = editor.getValue()
+
+var request = new XMLHttpRequest();
+request.onreadystatechange= function () {
+    if (request.readyState==4) {
+        alert(request.responseText);
+    }
+}
+request.open("POST", 'http://127.0.0.1:9087/test_data', true);
+request.setRequestHeader("header", "Data to test");
+request.setRequestHeader("Accept","text/plain");
+request.send(out_data);
+
+}
+</script>
+
+</head>
+<body>
+
+
+<div class="container">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+             <h3 class="panel-title">Editor</h3>
+<button onclick="onComplete()">Click me</button>
+        </div>
+!!!! EDITOR !!!!
+        </div>
+    </div>
+    <div class="text-center">---End of editor---</div>
+    
+</div>
+
+   
+<script src="https://cdn.jsdelivr.net/g/ace@1.2.6/min/ace.js" type="text/javascript" charset="utf-8"></script>
+<script>   
+    var editor = ace.edit("editor");
+    editor.setTheme("ace/theme/monokai");
+    editor.getSession().setMode("ace/mode/python");
+</script>
+
+</body>
+</html>

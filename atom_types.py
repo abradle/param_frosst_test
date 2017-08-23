@@ -20,7 +20,7 @@
 from __future__ import print_function
 from rdkit import Chem
 
-from atom_types_make import return_atom_types
+import atom_types_make
 import json
 # match_atom_index can be of type int or a list - otherwise trouble.
 #
@@ -264,11 +264,9 @@ def set_atom_types(mol):
 
 
 def set_parmfrosst_atom_types(mol):
-
-
     # print('debug H3a: {}'.format('[H][C^3;H1]'+branched_electroneg+branched_electroneg+electroneg))
-    smarts_list = return_atom_types()
-
+    reload(atom_types_make)
+    smarts_list = atom_types_make.return_atom_types()
     for smarts_info in smarts_list:
         atom_type, smarts, match_atom_index = smarts_info
 	# print("SMARTS: {}".format(smarts))
